@@ -1,176 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Summarizer</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <!-- Font Awesome -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: url('https://i.ytimg.com/vi/U0_WZq_M5Ks/maxresdefault.jpg') no-repeat center center/cover;
-            color: #fff;
-        }
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.8); /* Dark semi-transparent background */
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .btn {
-            margin: 5px;
-        }
-        #summary {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            color: black;
-            margin-top: 10px;
-        }
-        #microphone-status {
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Text SUMMARIZATION</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://i.ytimg.com/vi/U0_WZq_M5Ks/maxresdefault.jpg') no-repeat center center/cover;
+      color: #fff;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+    textarea, #summary {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #summary {
+      background: #f8f9fa;
+      color: #000;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+    .btn {
+      margin: 5px;
+    }
+    #microphone-status {
+      margin-top: 10px;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1050;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-dialog {
+      margin: 100px auto;
+      max-width: 500px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container text-center">
-        <h2><i class="fas fa-file-alt"></i> Text Summarizer</h2>
-        <textarea id="input-text" rows="8" placeholder="Enter your text here..."></textarea>
-        <br>
-        <button id="toggle-microphone" class="btn btn-primary">
-            <i class="fas fa-microphone"></i> Start Listening
-        </button>
-        <button id="stop-listening" class="btn btn-danger" style="display: none;">
-            <i class="fas fa-microphone-slash"></i> Stop Listening
-        </button>
-        <label id="microphone-status">Microphone: OFF</label>
-        <br>
-        <button id="summarize-btn" class="btn btn-warning">
-            <i class="fas fa-align-left"></i> Summarize
-        </button>
-        <button id="speak-btn" class="btn btn-success">
-            <i class="fas fa-volume-up"></i> Speak
-        </button>
-        <div id="summary"></div>
+  <div class="container text-center">
+    <h2><i class="fas fa-bullseye"></i> TEXT SUMMARIZATION</h2>
+    <textarea id="input-text" rows="8" placeholder="Enter your text here..."></textarea>
+    <br />
+    <button id="toggle-microphone" class="btn btn-primary">
+      <i class="fas fa-microphone"></i> Start Listening
+    </button>
+    <button id="stop-listening" class="btn btn-danger" style="display: none;">
+      <i class="fas fa-microphone-slash"></i> Stop Listening
+    </button>
+    <label id="microphone-status">Microphone: OFF</label>
+    <br />
+    <button id="summarize-btn" class="btn btn-warning">
+      <i class="fas fa-list"></i> Summarize
+    </button>
+    <button id="speak-btn" class="btn btn-success">
+      <i class="fas fa-volume-up"></i> Speak
+    </button>
+    <div id="summary"></div>
 
-        <!-- Modal -->
-        <div id="modal" class="modal" style="display: none;">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-info-circle"></i> Information</h5>
-                        <button type="button" class="close" id="close-modal" aria-label="Close">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" id="modal-body"></div>
-                </div>
-            </div>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-info-circle"></i> Information</h5>
+            <button type="button" class="close" id="close-modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="modal-body"></div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const inputText = document.getElementById('input-text');
-        const toggleMicrophone = document.getElementById('toggle-microphone');
-        const stopListening = document.getElementById('stop-listening');
-        const microphoneStatus = document.getElementById('microphone-status');
-        const summarizeBtn = document.getElementById('summarize-btn');
-        const speakBtn = document.getElementById('speak-btn');
-        const summaryDiv = document.getElementById('summary');
-        const modal = document.getElementById('modal');
-        const closeModal = document.getElementById('close-modal');
-        const modalBody = document.getElementById('modal-body');
+  <script>
+    const inputText = document.getElementById('input-text');
+    const toggleMicrophone = document.getElementById('toggle-microphone');
+    const stopListening = document.getElementById('stop-listening');
+    const microphoneStatus = document.getElementById('microphone-status');
+    const summarizeBtn = document.getElementById('summarize-btn');
+    const speakBtn = document.getElementById('speak-btn');
+    const summaryDiv = document.getElementById('summary');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('close-modal');
+    const modalBody = document.getElementById('modal-body');
 
-        // Enable speech recognition
-        let recognition;
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'en-US';
-            recognition.continuous = true;
-            recognition.interimResults = false;
+    let recognition;
 
-            recognition.onresult = event => {
-                let transcript = '';
-                for (let i = 0; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript + ' ';
-                }
-                inputText.value = transcript.trim();
-            };
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = false;
 
-            recognition.onerror = event => {
-                modalBody.innerText = 'Error recognizing speech: ' + event.error;
-                modal.style.display = 'block';
-            };
-
-            recognition.onend = () => {
-                microphoneStatus.innerText = 'Microphone: OFF';
-                toggleMicrophone.innerHTML = '<i class="fas fa-microphone"></i> Start Listening';
-                stopListening.style.display = 'none';
-            };
-
-            toggleMicrophone.addEventListener('click', () => {
-                navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
-                    recognition.start();
-                    toggleMicrophone.innerHTML = '<i class="fas fa-microphone-slash"></i> Stop Listening';
-                    stopListening.style.display = 'block';
-                    microphoneStatus.innerText = 'Microphone: ON';
-                }).catch(error => {
-                    modalBody.innerText = 'Error accessing microphone: ' + error.message;
-                    modal.style.display = 'block';
-                });
-            });
-
-            stopListening.addEventListener('click', () => {
-                recognition.stop();
-            });
-        } else {
-            modalBody.innerText = 'Speech recognition is not supported in this browser. Please use Google Chrome or Edge.';
-            modal.style.display = 'block';
+      recognition.onresult = event => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript + ' ';
         }
+        inputText.value = transcript.trim();
+      };
 
-        // Enable text-to-speech
-        speakBtn.addEventListener('click', () => {
-            const text = summaryDiv.innerText || inputText.value;
-            if (text.trim() === '') {
-                modalBody.innerText = 'Please enter or summarize some text before speaking.';
-                modal.style.display = 'block';
-                return;
-            }
-            const speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'en-US';
-            window.speechSynthesis.speak(speech);
-        });
+      recognition.onerror = e => showModal('Speech recognition error: ' + e.error);
 
-        // Summarization function
-        function summarizeText(text) {
-            const sentences = text.split('. ');
-            if (sentences.length <= 2) return text; // If text is short, return it as is
-            const importantSentences = sentences.slice(0, Math.ceil(sentences.length / 3)); // Take top 1/3 of sentences
-            return importantSentences.join('. ') + '.';
-        }
+      recognition.onend = () => {
+        microphoneStatus.innerText = 'Microphone: OFF';
+        toggleMicrophone.innerHTML = '<i class="fas fa-microphone"></i> Start Listening';
+        stopListening.style.display = 'none';
+      };
 
-        summarizeBtn.addEventListener('click', () => {
-            const text = inputText.value;
-            if (text.trim() === '') {
-                modalBody.innerText = 'Please enter some text to summarize.';
-                modal.style.display = 'block';
-                return;
-            }
-            const summary = summarizeText(text);
-            summaryDiv.innerHTML = `<h5> Summarized output : </h5><p>${summary}</p>`;
-        });
+      toggleMicrophone.addEventListener('click', () => {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
+          recognition.start();
+          toggleMicrophone.innerHTML = '<i class="fas fa-microphone-slash"></i> Stop Listening';
+          stopListening.style.display = 'inline-block';
+          microphoneStatus.innerText = 'Microphone: ON';
+        }).catch(err => showModal('Microphone access error: ' + err.message));
+      });
 
-        closeModal.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-    </script>
+      stopListening.addEventListener('click', () => recognition.stop());
+    } else {
+      showModal('Speech recognition is not supported in your browser. Please use Google Chrome or Microsoft Edge.');
+    }
+
+    speakBtn.addEventListener('click', () => {
+      const text = summaryDiv.innerText || inputText.value;
+      if (!text.trim()) return showModal('Please enter or extract text before using text-to-speech.');
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = 'en-US';
+      window.speechSynthesis.speak(speech);
+    });
+
+    summarizeBtn.addEventListener('click', () => {
+      const text = inputText.value.trim();
+      if (!text) return showModal('Please enter some text to extract keypoints.');
+      const summary = summarizeText(text);
+      summaryDiv.innerHTML = `<h5>Key Points:</h5><pre>${summary}</pre>`;
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    function showModal(message) {
+      modalBody.innerText = message;
+      modal.style.display = 'block';
+    }
+
+    function summarizeText(text) {
+      const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
+      if (sentences.length <= 2) return text;
+
+      const ranked = sentences.sort((a, b) => b.length - a.length);
+      const keypoints = ranked.slice(0, 3).map(s => '• ' + s.trim());
+      return keypoints.join('\n');
+    }
+  </script>
 </body>
 </html>
