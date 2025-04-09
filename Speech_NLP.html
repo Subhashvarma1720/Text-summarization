@@ -155,7 +155,7 @@
       const text = inputText.value.trim();
       if (!text) return showModal('Please enter some text to extract keypoints.');
       const summary = summarizeText(text);
-      summaryDiv.innerHTML = `<h5>Key Points:</h5><pre>${summary}</pre>`;
+      summaryDiv.innerHTML = `<h5>                                                  Summarized OutPut:</h5> <pre>${summary}</pre>`;
     });
 
     closeModal.addEventListener('click', () => {
