@@ -38,7 +38,10 @@
     #microphone-status {
       margin-top: 10px;
     }
-    /* Modal Styles */
+    .compression-section {
+      text-align: left;
+      margin-top: 20px;
+    }
     .modal {
       display: none;
       position: fixed;
@@ -59,8 +62,15 @@
 <body>
   <div class="container text-center">
     <h2><i class="fas fa-bullseye"></i> TEXT SUMMARIZATION</h2>
+    
     <textarea id="input-text" rows="8" placeholder="Enter your text here..."></textarea>
-    <br />
+
+    <!-- Compression Percentage Slider -->
+    <div class="compression-section">
+      <label for="compression-range"><strong>Compression Level:</strong> <span id="compression-value">30%</span></label>
+      <input type="range" id="compression-range" min="10" max="100" step="10" value="30" class="form-control-range">
+    </div>
+
     <button id="toggle-microphone" class="btn btn-primary">
       <i class="fas fa-microphone"></i> Start Listening
     </button>
@@ -104,8 +114,14 @@
     const modal = document.getElementById('modal');
     const closeModal = document.getElementById('close-modal');
     const modalBody = document.getElementById('modal-body');
+    const compressionRange = document.getElementById('compression-range');
+    const compressionValue = document.getElementById('compression-value');
 
     let recognition;
+
+    compressionRange.addEventListener('input', () => {
+      compressionValue.innerText = `${compressionRange.value}%`;
+    });
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -152,23 +168,21 @@
     });
 
     summarizeBtn.addEventListener('click', () => {
-  const text = inputText.value.trim();
-  if (!text) return showModal('Please enter some text to extract keypoints.');
+      const text = inputText.value.trim();
+      const compression = parseInt(compressionRange.value);
+      if (!text) return showModal('Please enter some text to extract keypoints.');
 
-  fetch('/summarize', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ text })
-  })
-  .then(res => res.json())
-  .then(data => {
-    summaryDiv.innerHTML = `<h5>Key Points:</h5><pre>${data.summary}</pre>`;
-  })
-  .catch(err => showModal('Server error: ' + err.message));
-});
-
+      fetch('/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, compression })
+      })
+      .then(res => res.json())
+      .then(data => {
+        summaryDiv.innerHTML = `<h5>                                          SUMMARIZED OUTPUT : (${compression}%)</h5><pre>${data.summary}</pre>`;
+      })
+      .catch(err => showModal('Server error: ' + err.message));
+    });
 
     closeModal.addEventListener('click', () => {
       modal.style.display = 'none';
@@ -177,15 +191,6 @@
     function showModal(message) {
       modalBody.innerText = message;
       modal.style.display = 'block';
-    }
-
-    function summarizeText(text) {
-      const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
-      if (sentences.length <= 2) return text;
-
-      const ranked = sentences.sort((a, b) => b.length - a.length);
-      const keypoints = ranked.slice(0, 3).map(s => '• ' + s.trim());
-      return keypoints.join('\n');
     }
   </script>
 </body>
