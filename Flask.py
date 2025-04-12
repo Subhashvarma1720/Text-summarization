@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import sqlite3
 import os
+import math
 
 app = Flask(__name__)
 
@@ -26,7 +27,9 @@ def index():
 def summarize():
     data = request.json
     input_text = data.get('text', '')
-    summary = generate_summary(input_text)
+    compression = int(data.get('compression', 30))  # Value from slider
+
+    summary = generate_summary(input_text, compression)
 
     # Save to database
     conn = sqlite3.connect('summarizer.db')
@@ -37,12 +40,23 @@ def summarize():
 
     return jsonify({'summary': summary})
 
-def generate_summary(text):
+
+def generate_summary(text, compression):
     sentences = text.split('. ')
-    if len(sentences) <= 2:
+    total_sentences = len(sentences)
+
+    if total_sentences <= 2:
         return text
-    important = sentences[:min(3, len(sentences))]  # simple logic
-    return '\n'.join(['• ' + s.strip() for s in important])
+
+    # Invert compression logic: higher % = shorter summary
+    keep_ratio = (100 - compression) / 100
+    keep_count = max(1, math.ceil(keep_ratio * total_sentences))
+
+    # Select first N sentences
+    selected = sentences[:keep_count]
+
+    return '\n'.join(['• ' + s.strip() for s in selected if s.strip()])
+
 
 if __name__ == '__main__':
     init_db()
