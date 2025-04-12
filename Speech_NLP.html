@@ -152,11 +152,23 @@
     });
 
     summarizeBtn.addEventListener('click', () => {
-      const text = inputText.value.trim();
-      if (!text) return showModal('Please enter some text to extract keypoints.');
-      const summary = summarizeText(text);
-      summaryDiv.innerHTML = `<h5>                                                  Summarized OutPut:</h5> <pre>${summary}</pre>`;
-    });
+  const text = inputText.value.trim();
+  if (!text) return showModal('Please enter some text to extract keypoints.');
+
+  fetch('/summarize', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    summaryDiv.innerHTML = `<h5>Key Points:</h5><pre>${data.summary}</pre>`;
+  })
+  .catch(err => showModal('Server error: ' + err.message));
+});
+
 
     closeModal.addEventListener('click', () => {
       modal.style.display = 'none';
